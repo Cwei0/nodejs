@@ -1,7 +1,19 @@
-const {format} = require('date-fns')
-const {v4: uuid} = require('uuid')
+// console.log("Starting")
 
-const New = format(new Date(), 'yyyyMMdd\tHH:mm:ss')
+const logEvents = require('./logEvent')
 
-console.log(New)
-console.log(uuid())
+const EventEmitter = require('events')
+
+class MyEmitter extends EventEmitter {}
+
+//initialize object
+const myEmitter = new MyEmitter()
+
+//add a listerner once so we dont loop for ever
+myEmitter.on('log', (msg) => {
+    logEvents(msg)
+})
+
+setTimeout(() => {
+    myEmitter.emit('log', 'Log Event emitted!')
+}, 6000)
