@@ -1,38 +1,110 @@
-console.log("Starting")
+// console.log("Starting")
+const http = require("http");
 
-// console.log(global)
-//  module importing with Common JS module and es6 module
+const fs = require("fs");
 
-// import os from 'os' 
-const os = require('os');
-const path = require('path') //Common Core module import
-const {add, divide} = require('./math') //Custom module & destructuring
+const fsPromises = require("fs").promises;
 
-// console.log(divide(5,8))
+const path = require("path");
 
-// console.log(os.type())
-// console.log(os.version())
-// console.log(os.platform())
-// console.log(os.arch())
-// console.log(os.homedir())
-// console.log(os.userInfo())
-// console.log(os.networkInterfaces())
-// console.log(os.machine())
+const logEvents = require('./logEvent')
 
-// const currentOS = {
-//     name: os.type(),
-//     release: os.version(),
-//     totalMem: os.totalmem()
+const EventEmitter = require('events')
 
-// }
-// console.log(currentOS)
+class MyEmitter extends EventEmitter { }
 
-// console.log(__dirname)
-// console.log(__filename)
+//initialize object
+const myEmitter = new MyEmitter()
 
-// console.log(path.dirname(__filename))
-// console.log(path.basename(__filename))
-// console.log(path.extname(__filename))
-// console.log(path.parse(__filename))
-// console.log(path.format(__filename))
+myEmitter.on('log', (msg, fileName) => logEvents(msg, fileName))
 
+const HOST = 'localhost'
+
+const PORT = process.env.PORT || 4500
+
+const serverFile = async (filePath, contentType, res) => {
+    try {
+        const rawData = await fsPromises.readFile(
+            filePath,
+            !contentType.includes('image') ? 'utf8' : ''
+        )
+        const data = contentType === 'application/json' ? JSON.parse(rawData) : rawData
+        res.writeHead(
+            filePath.includes('404.html') ? 404 : 200, { 'Content-Type': contentType }
+        )
+        res.end(
+            contentType === 'application/json' ? JSON.stringify(data) : data
+        )
+    } catch (err) {
+        console.error(err)
+        myEmitter.emit('log', `${err.name}:${err.message}`, 'errLog.txt')
+        res.statusCode = 500
+        res.end()
+    }
+
+
+}
+
+const server = http.createServer((req, res) => {
+    console.log(req.url, req.method)
+    myEmitter.emit('log', `${req.url}\t${req.method}`, 'reqLog.txt')
+
+
+    const extension = path.extname(req.url)
+
+    let contentType;
+
+    switch (extension) {
+        case '.css':
+            contentType = 'text/css'
+            break
+        case '.js':
+            contentType = 'text/javascript'
+            break
+        case '.json':
+            contentType = 'application/json'
+            break
+        case '.jpg':
+            contentType = 'image/jpeg'
+            break
+        case '.png':
+            contentType = 'image/png'
+            break
+        case '.txt':
+            contentType = 'text/plain'
+            break
+        default:
+            contentType = 'text/html'
+    }
+
+    let filePath = contentType === 'text/html' && req.url === '/' ? path.join(__dirname, 'views', 'index.html') : contentType === 'text/html' && req.url.slice(-1) === '/' ? path.join(__dirname, 'views', req.url, 'index.html') : contentType === 'text/html' ? path.join(__dirname, 'views', req.url) : path.join(__dirname, req.url)
+
+    if (!extension && req.url.slice(-1) !== '/') filePath += 'html';
+
+    const fileExist = fs.existsSync(filePath);
+
+    if (fileExist) {
+        serverFile(filePath, contentType, res)
+    } else {
+        //301
+        //404
+        switch (path.parse(filePath).base) {
+            case 'old-page.html':
+                res.writeHead(301, { 'Location': '/new-page.html' })
+                res.end()
+                break
+
+            case 'www-page.html':
+                res.writeHead(301, { 'Location': '/' })
+                res.end()
+                break
+            default:
+                serverFile(path.join(__dirname, 'views', '404.html'), 'text/html', res)
+        }
+    }
+})
+
+
+server.listen(PORT, HOST, () => {
+    console.log(`listening on ${PORT}`)
+})
