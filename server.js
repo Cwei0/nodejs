@@ -1,9 +1,37 @@
 const express = require('express')
-
 const app = express()
-const path = require("path");
 
-const PORT = process.env.PORT || 3500
+const path = require("path")
+const { logEvents, logger } = require("./middleware/logEvent")
+const errorHandler = require("./middleware/errorHandler")
+
+const cors = require('cors')
+const PORT = process.env.PORT || 8500
+//Custom Middleware
+app.use(logger)
+
+//CORS setup
+const whitelist = ['https://www.bing.com/', 'https://www.google.com/', 'localhost:8500/']
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS rules'))
+        }
+    },
+    optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOptions))
+
+
+//Built-in Middlewares
+app.use(express.urlencoded({ extended: false }))
+
+app.use(express.json())
+
+app.use(express.static(path.join(__dirname, '/public'))) //pushing css and img sheets
 
 app.get('^/$|/index(.html)?', (req, res) => {
     // res.sendFile('./views/index.html', {root: __dirname})
@@ -47,16 +75,16 @@ const cb2 = function (req, res) {
 app.get('/example/c', [cb0, cb1, cb2])
 
 //App.route() fn used to chain route handlers
-app.route('/book')
-    .get((req, res) => {
-        res.send('Get a random book')
-    })
-    .post((req, res) => {
-        res.send('Add a book')
-    })
-    .put((req, res) => {
-        res.send('Update the book')
-    })
+// app.route('/book')
+//     .get((req, res) => {
+//         res.send('Get a random book')
+//     })
+//     .post((req, res) => {
+//         res.send('Add a book')
+//     })
+//     .put((req, res) => {
+//         res.send('Update the book')
+//     })
 
 
 app.listen(PORT, () => {
