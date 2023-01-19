@@ -4,3 +4,5 @@
 20230119	04:41:11	6be2d3e9-1b2f-48b4-9933-1a726c9203fd	Error:Not allowed by CORS rules
 20230119	04:41:11	eb7b5bc1-8ff7-46cb-8bcf-5cc75a67fdec	Error:Not allowed by CORS rules
 20230119	16:32:42	149cb067-4baa-4673-a060-d5156f4343f1	ReferenceError:res is not defined
+20230119	22:19:25	2b60815f-0af9-40e7-93a8-38dde5b824c9	Error:ENOENT: no such file or directory, stat '/Users/bottgabriel/Desktop/CODE/nodejs/router/views/new-page.html'
+20230119	22:20:34	cac8d1d4-0b75-4c56-a34a-197be387adf6	Error:ENOENT: no such file or directory, stat '/Users/bottgabriel/Desktop/CODE/nodejs/router/views/new-page.html'
