@@ -6,37 +6,22 @@ const { logEvents, logger } = require("./middleware/logEvent")
 const errorHandler = require("./middleware/errorHandler")
 
 const cors = require('cors')
+const corsConfig = require('./config/corsOption')
+
 const PORT = process.env.PORT || 3500
 //Custom Middleware
-app.use(logger)
-
-//CORS setup
-const whitelist = ['https://www.bing.com/', 'https://www.google.com/', 'localhost:8500/']
-const corsOptions = {
-    origin: (origin, callback) => {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS rules'))
-        }
-    },
-    optionsSuccessStatus: 200
-}
-
-app.use(cors(corsOptions))
-
+app.use(logger) 
+app.use(cors(corsConfig))
 
 //Built-in Middlewares
 app.use(express.urlencoded({ extended: false }))
 
 app.use(express.json())
 
-app.use('/',express.static(path.join(__dirname, '/public')))
-app.use('/subdir' ,express.static(path.join(__dirname, '/public'))) //pushing css and img sheets
+app.use('/',express.static(path.join(__dirname, '/public'))) //pushing css and img sheets
 
 //Routes
 app.use('/', require('./router/root'))
-app.use('/subdir', require('./router/subdir'))
 app.use('/employees', require('./router/api/employees'))
 
 app.all('/*', (req, res) => {
