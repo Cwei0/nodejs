@@ -25,8 +25,10 @@ app.use('/',express.static(path.join(__dirname, '/public'))) //pushing css and i
 
 //Routers
 app.use('/', require('./router/root'))
-app.use('/employees', require('./router/api/employees'))
 app.use('/register', require('./router/register'))
+app.use('/auth', require('./router/auth'))
+app.use('/employees', require('./router/api/employees'))
+
 
 app.all('/*', (req, res) => {
     res.status(404);
