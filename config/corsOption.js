@@ -1,12 +1,9 @@
 //CORS setup
-const whitelist = [
-    'https://www.bing.com/',
-    'https://www.google.com/',
-    'localhost:8500/'
-]
+const allowedOrigins = require('./allowedOrigins')
+
 const corsOptions = {
     origin: (origin, callback) => {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
             callback(null, true)
         } else {
             callback(new Error('Not allowed by CORS rules'))
