@@ -8,6 +8,8 @@ const errorHandler = require("./middleware/errorHandler")
 const cors = require('cors')
 const corsConfig = require('./config/corsOption')
 
+const cookieparser = require('cookie-parser')
+const verifyJwt = require('./middleware/verifyJWT')
 const PORT = process.env.PORT || 8500
 
 //Custom Middleware
@@ -21,12 +23,18 @@ app.use(express.urlencoded({ extended: false }))
 
 app.use(express.json())
 
+//Middleware for Cookie
+app.use(cookieparser())
+
 app.use('/',express.static(path.join(__dirname, '/public'))) //pushing css and img sheets
 
 //Routers
 app.use('/', require('./router/root'))
 app.use('/register', require('./router/register'))
 app.use('/auth', require('./router/auth'))
+app.use('/refresh', require('./router/refresh'))
+
+app.use(verifyJwt)
 app.use('/employees', require('./router/api/employees'))
 
 
