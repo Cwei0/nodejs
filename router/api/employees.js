@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router()
 const employeesController = require('../../controllers/employeesController')
+const ROLES_LIST = require('../../config/roles_list')
+const verifyRoles = require('../../middleware/verifyRoles')
 
 //App.route() fn used to chain route handlers
 // app.route('/book')
@@ -16,9 +18,9 @@ const employeesController = require('../../controllers/employeesController')
 
 router.route('/')
     .get(employeesController.getAllEmployee)
-    .post(employeesController.createNewEmployee)
-    .put(employeesController.updateEmployeeInfo)
-    .delete(employeesController.deleteEmployee)
+    .post(verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),employeesController.createNewEmployee)
+    .put(verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),employeesController.updateEmployeeInfo)
+    .delete(verifyRoles(ROLES_LIST.Admin),employeesController.deleteEmployee)
 
 
 router.route('/:id')
