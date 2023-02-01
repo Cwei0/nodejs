@@ -1,41 +1,35 @@
-const jwt = require('jsonwebtoken')
-require('dotenv').config()
-const userDB = {
-    user: require('../model/user.json'),
-    setUser: function (data) { this.user = data }
-}
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const User = require("../model/User");
 
-const handleRefreshToken = (req, res) => {
-    const cookies = req.cookies
-    if (!cookies?.jwt) return res.sendStatus(401)
-    console.log(cookies.jwt)
-    const refreshToken = cookies.jwt
+const handleRefreshToken = async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(401);
+    console.log(cookies.jwt);
 
+    const refreshToken = cookies.jwt;
 
-    const foundUser = userDB.user.find(person => person.refreshToken === refreshToken)
-    if (!foundUser) return res.sendStatus(403) // Forbidden
+    const foundUser = await User.findOne({ refreshToken: refreshToken }).exec();
+    if (!foundUser) return res.sendStatus(403); // Forbidden
     //evaluate the jwt token
 
     jwt.verify(
         refreshToken,
         process.env.REQUEST_TOKEN_SECRET,
         (err, decoded) => {
-            if (err || foundUser.username !== decoded) return res.sendStatus(403)
+            if (err || foundUser.username !== decoded.username) return res.sendStatus(403);
             const roles = Object.values(foundUser.roles)
-
             const accessToken = jwt.sign(
                 {
-                    "UserInfo": {
-                         "username": decoded.username,
-                         "roles": roles,
+                    UserInfo: {
+                        username: decoded.username,
+                        roles: roles,
                     },
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '50s' }
-            )
-            res.json({ accessToken })
-        }
-    )
-
-}
-module.exports = { handleRefreshToken }
+                { expiresIn: "120s" }
+            );
+            res.json({ accessToken });
+        });
+};
+module.exports = { handleRefreshToken };
