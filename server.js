@@ -12,6 +12,7 @@ const credentials = require('./middleware/credentials')
 
 const cookieparser = require('cookie-parser')
 const verifyJwt = require('./middleware/verifyJWT')
+const limiter = require('./middleware/limiter')
 
 const mongoose = require('mongoose')
 const connectDB = require('./config/dbConn')
@@ -36,7 +37,7 @@ app.use(express.json())
 
 //Middleware for Cookie
 app.use(cookieparser())
-
+app.use('/',limiter)
 app.use('/',express.static(path.join(__dirname, '/public'))) //pushing css and img sheets
 
 //Routers
